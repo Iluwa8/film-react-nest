@@ -35,7 +35,7 @@ export class OrderService {
         );
       }
 
-      const seatKey = `${ticket.row}-${ticket.seat}`;
+      const seatKey = `${ticket.row}:${ticket.seat}`;
       const alreadyTaken =
         session.taken.includes(seatKey) || takenInRequest.has(seatKey);
       if (alreadyTaken) {
@@ -60,7 +60,7 @@ export class OrderService {
         (await this.filmsRepository.findById(ticket.film))!;
 
       const session = film.schedule.find((s) => s.id === ticket.session)!;
-      const seatKey = `${ticket.row}-${ticket.seat}`;
+      const seatKey = `${ticket.row}:${ticket.seat}`;
       if (!session.taken.includes(seatKey)) {
         session.taken.push(seatKey);
       }

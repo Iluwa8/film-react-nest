@@ -1,5 +1,5 @@
 export const FILMS_REPOSITORY = 'FILMS_REPOSITORY';
-export const ORDERS_REPOSITORY = 'ORDERS>REPOSITORY';
+export const ORDERS_REPOSITORY = 'ORDERS_REPOSITORY';
 
 export abstract class Repository<T extends { id: string }> {
   abstract findAll(): Promise<T[]>;
