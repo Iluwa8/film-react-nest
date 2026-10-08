@@ -75,12 +75,10 @@ describe('OrderService', () => {
     ordersRepository = {
       findAll: jest.fn(),
       findById: jest.fn(),
-      create: jest
-        .fn()
-        .mockImplementation(async (data: Omit<Order, 'id'>) => ({
-          id: 'order-1',
-          ...data,
-        })),
+      create: jest.fn().mockImplementation(async (data: Omit<Order, 'id'>) => ({
+        id: 'order-1',
+        ...data,
+      })),
       update: jest.fn(),
     } as unknown as jest.Mocked<Repository<Order>>;
 
