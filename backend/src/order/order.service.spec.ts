@@ -155,6 +155,48 @@ describe('OrderService', () => {
     expect(ordersRepository.create).not.toHaveBeenCalled();
   });
 
+  it('бросает BadRequestException при неверной цене', async () => {
+    const film = createFilm();
+    filmsRepository.findById.mockResolvedValue(film);
+
+    const dto = createDto({
+      tickets: [
+        {
+          film: filmId,
+          session: sessionId,
+          daytime,
+          row: 2,
+          seat: 5,
+          price: 1,
+        },
+      ],
+    });
+
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+    expect(filmsRepository.addTakenSeat).not.toHaveBeenCalled();
+  });
+
+  it('бросает BadRequestException при неверном daytime', async () => {
+    const film = createFilm();
+    filmsRepository.findById.mockResolvedValue(film);
+
+    const dto = createDto({
+      tickets: [
+        {
+          film: filmId,
+          session: sessionId,
+          daytime: '1970-01-01T00:00:00+00:00',
+          row: 2,
+          seat: 5,
+          price: 350,
+        },
+      ],
+    });
+
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+    expect(filmsRepository.addTakenSeat).not.toHaveBeenCalled();
+  });
+
   it('бросает BadRequestException, если фильм не найден', async () => {
     filmsRepository.findById.mockResolvedValue(null);
 

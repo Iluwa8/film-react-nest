@@ -35,6 +35,18 @@ export class OrderService {
         );
       }
 
+      if (ticket.price !== session.price) {
+        throw new BadRequestException(
+          `Price mismatch for session ${ticket.session}: expected ${session.price}, got ${ticket.price}`,
+        );
+      }
+
+      if (ticket.daytime !== session.daytime) {
+        throw new BadRequestException(
+          `Daytime mismatch for session ${ticket.session}`,
+        );
+      }
+
       const seatKey = `${ticket.row}:${ticket.seat}`;
       const alreadyTaken =
         session.taken.includes(seatKey) || takenInRequest.has(seatKey);
