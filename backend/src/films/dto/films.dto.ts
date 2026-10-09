@@ -1,12 +1,16 @@
-//TODO описать DTO для запросов к /films
+import { Exclude, Expose } from 'class-transformer';
+
+@Exclude()
 export class FilmDto {
-  id: string;
-  rating: number;
-  director: string;
-  tags: string[];
-  title: string;
-  about: string;
-  description: string;
-  image: string;
-  cover: string;
+  @Expose() id: string;
+  @Expose() rating: number;
+  @Expose() director: string;
+  @Expose() tags: string[];
+  @Expose() title: string;
+  @Expose() about: string;
+  @Expose() description: string;
+  @Expose() image: string;
+  @Expose() cover: string;
+
+  @Exclude() _id?: unknown;
 }

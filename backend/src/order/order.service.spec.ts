@@ -4,6 +4,7 @@ import { OrderService } from './order.service';
 import {
   FILMS_REPOSITORY,
   ORDERS_REPOSITORY,
+  FilmsRepository,
   Repository,
 } from '../repository/repository.interface';
 import { Film } from '../films/entities/film.entity';
@@ -12,7 +13,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 
 describe('OrderService', () => {
   let service: OrderService;
-  let filmsRepository: jest.Mocked<Repository<Film>>;
+  let filmsRepository: jest.Mocked<FilmsRepository>;
   let ordersRepository: jest.Mocked<Repository<Order>>;
 
   const filmId = 'film-1';
@@ -63,14 +64,9 @@ describe('OrderService', () => {
       findAll: jest.fn(),
       findById: jest.fn(),
       create: jest.fn(),
-      update: jest
-        .fn()
-        .mockImplementation(async (id: string, data: Partial<Film>) => ({
-          ...createFilm(),
-          ...data,
-          id,
-        })),
-    } as unknown as jest.Mocked<Repository<Film>>;
+      update: jest.fn(),
+      addTakenSeat: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<FilmsRepository>;
 
     ordersRepository = {
       findAll: jest.fn(),
@@ -109,8 +105,11 @@ describe('OrderService', () => {
       price: 350,
     });
     expect(result.items[0].id).toBeDefined();
-    expect(film.schedule[0].taken).toContain('2:5');
-    expect(filmsRepository.update).toHaveBeenCalledTimes(1);
+    expect(filmsRepository.addTakenSeat).toHaveBeenCalledWith(
+      filmId,
+      sessionId,
+      '2:5',
+    );
     expect(ordersRepository.create).toHaveBeenCalledTimes(1);
   });
 
@@ -122,7 +121,7 @@ describe('OrderService', () => {
     await expect(service.create(createDto())).rejects.toThrow(
       BadRequestException,
     );
-    expect(filmsRepository.update).not.toHaveBeenCalled();
+    expect(filmsRepository.addTakenSeat).not.toHaveBeenCalled();
     expect(ordersRepository.create).not.toHaveBeenCalled();
   });
 
@@ -152,6 +151,7 @@ describe('OrderService', () => {
     });
 
     await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+    expect(filmsRepository.addTakenSeat).not.toHaveBeenCalled();
     expect(ordersRepository.create).not.toHaveBeenCalled();
   });
 
@@ -221,10 +221,22 @@ describe('OrderService', () => {
     const result = await service.create(dto);
 
     expect(result.total).toBe(3);
-    expect(film.schedule[0].taken).toEqual(
-      expect.arrayContaining(['1:1', '1:2', '3:7']),
+    expect(filmsRepository.addTakenSeat).toHaveBeenCalledTimes(3);
+    expect(filmsRepository.addTakenSeat).toHaveBeenCalledWith(
+      filmId,
+      sessionId,
+      '1:1',
     );
-    expect(filmsRepository.update).toHaveBeenCalledTimes(1);
+    expect(filmsRepository.addTakenSeat).toHaveBeenCalledWith(
+      filmId,
+      sessionId,
+      '1:2',
+    );
+    expect(filmsRepository.addTakenSeat).toHaveBeenCalledWith(
+      filmId,
+      sessionId,
+      '3:7',
+    );
     expect(ordersRepository.create).toHaveBeenCalledTimes(1);
   });
 });

@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 import {
   FILMS_REPOSITORY,
   ORDERS_REPOSITORY,
+  FilmsRepository,
   Repository,
 } from '../repository/repository.interface';
-import { Film } from '../films/entities/film.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { Order } from './entities/order.entity';
@@ -14,7 +14,7 @@ import { Order } from './entities/order.entity';
 export class OrderService {
   constructor(
     @Inject(FILMS_REPOSITORY)
-    private readonly filmsRepository: Repository<Film>,
+    private readonly filmsRepository: FilmsRepository,
     @Inject(ORDERS_REPOSITORY)
     private readonly ordersRepository: Repository<Order>,
   ) {}
@@ -45,31 +45,18 @@ export class OrderService {
       takenInRequest.add(seatKey);
     }
 
-    const items = dto.tickets.map((ticket) => {
-      return {
-        ...ticket,
-        id: randomUUID(),
-      };
-    });
-
-    const filmsToUpdate = new Map<string, Film>();
+    const items = dto.tickets.map((ticket) => ({
+      ...ticket,
+      id: randomUUID(),
+    }));
 
     for (const ticket of dto.tickets) {
-      const film =
-        filmsToUpdate.get(ticket.film) ??
-        (await this.filmsRepository.findById(ticket.film))!;
-
-      const session = film.schedule.find((s) => s.id === ticket.session)!;
       const seatKey = `${ticket.row}:${ticket.seat}`;
-      if (!session.taken.includes(seatKey)) {
-        session.taken.push(seatKey);
-      }
-
-      filmsToUpdate.set(ticket.film, film);
-    }
-
-    for (const film of filmsToUpdate.values()) {
-      await this.filmsRepository.update(film.id, { schedule: film.schedule });
+      await this.filmsRepository.addTakenSeat(
+        ticket.film,
+        ticket.session,
+        seatKey,
+      );
     }
 
     await this.ordersRepository.create({
