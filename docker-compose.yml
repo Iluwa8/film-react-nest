@@ -10,7 +10,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+      - ./backend/test/prac.init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./backend/test/prac.films.sql:/docker-entrypoint-initdb.d/2-films.sql
+      - ./backend/test/prac.shedules.sql:/docker-entrypoint-initdb.d/3-shedules.sql
