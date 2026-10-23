@@ -1,44 +1,26 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Schema({ _id: false })
-export class OrderItem {
-  @Prop({ required: true })
-  id: string;
-
-  @Prop({ required: true })
+export interface OrderItem {
   film: string;
-
-  @Prop({ required: true })
   session: string;
-
-  @Prop({ required: true })
   daytime: string;
-
-  @Prop({ required: true })
   row: number;
-
-  @Prop({ required: true })
   seat: number;
-
-  @Prop({ required: true })
   price: number;
+  id: string;
 }
 
-export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);
-
-@Schema({ collection: 'orders', versionKey: false, id: false })
+@Entity('orders')
 export class Order {
-  @Prop({ required: true, unique: true, index: true })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Prop({ required: true })
+  @Column()
   email: string;
 
-  @Prop({ required: true })
+  @Column()
   phone: string;
 
-  @Prop({ type: [OrderItemSchema], default: [] })
+  @Column('jsonb')
   items: OrderItem[];
 }
-
-export const OrderSchema = SchemaFactory.createForClass(Order);

@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: exampleuser
+      POSTGRES_PASSWORD: examplepassword
+      POSTGRES_DB: exampledb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/test/prac.init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./backend/test/prac.films.sql:/docker-entrypoint-initdb.d/2-films.sql
+      - ./backend/test/prac.shedules.sql:/docker-entrypoint-initdb.d/3-shedules.sql

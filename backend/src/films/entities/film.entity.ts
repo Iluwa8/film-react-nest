@@ -1,78 +1,41 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Schedule } from './schedule.entity';
 
-@Schema({ _id: false })
-export class Schedule {
-  @Prop({ required: true })
-  id: string;
-
-  @Prop({ required: true })
-  daytime: string;
-
-  @Prop({ required: true })
-  hall: number;
-
-  @Prop({ required: true })
-  rows: number;
-
-  @Prop({ required: true })
-  seats: number;
-
-  @Prop({ required: true })
-  price: number;
-
-  @Prop({ type: [String], default: [] })
-  taken: string[];
-}
-
-export const ScheduleSchema = SchemaFactory.createForClass(Schedule);
-
-@Schema({
-  collection: 'films',
-  versionKey: false,
-  id: false,
-  toJSON: {
-    transform: (_doc, ret) => {
-      delete ret._id;
-      return ret;
-    },
-  },
-  toObject: {
-    transform: (_doc, ret) => {
-      delete ret._id;
-      return ret;
-    },
-  },
-})
+@Entity('films')
 export class Film {
-  @Prop({ required: true, unique: true, index: true })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Prop()
+  @Column('float')
   rating: number;
 
-  @Prop()
+  @Column()
   director: string;
 
-  @Prop({ type: [String], default: [] })
+  @Column({
+    type: 'text',
+    transformer: {
+      to: (v: string[] | string) => (Array.isArray(v) ? v.join(',') : v),
+      from: (v: string) => (v ? v.split(',') : []),
+    },
+  })
   tags: string[];
 
-  @Prop()
+  @Column()
   image: string;
 
-  @Prop()
+  @Column()
   cover: string;
 
-  @Prop()
+  @Column()
   title: string;
 
-  @Prop()
+  @Column()
   about: string;
 
-  @Prop()
+  @Column()
   description: string;
 
-  @Prop({ type: [ScheduleSchema], default: [] })
+  @OneToMany(() => Schedule, (s) => s.film, { cascade: true })
   schedule: Schedule[];
 }
-
-export const FilmSchema = SchemaFactory.createForClass(Film);
