@@ -1,15 +1,79 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
     container_name: postgres_container
     environment:
-      POSTGRES_USER: exampleuser
-      POSTGRES_PASSWORD: examplepassword
-      POSTGRES_DB: exampledb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - ./backend/test/prac.init.sql:/docker-entrypoint-initdb.d/1-init.sql
       - ./backend/test/prac.films.sql:/docker-entrypoint-initdb.d/2-films.sql
-      - ./backend/test/prac.shedules.sql:/docker-entrypoint-initdb.d/3-shedules.sql
+      - ./backend/test/prac.schedules.sql:/docker-entrypoint-initdb.d/3-schedules.sql
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/film-react-nest-backend:latest
+    container_name: backend_container
+    env_file: .env
+    environment:
+      DATABASE_DRIVER: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_NAME: ${POSTGRES_DB}
+      LOG_FORMAT: ${LOG_FORMAT}
+      PORT: ${BACKEND_PORT}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/film-react-nest-frontend:latest
+    volumes:
+      - frontend_dist:/shared-dist
+    restart: "no"   # одноразовый контейнер-билдер
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/film-react-nest-nginx:latest
+    container_name: nginx_container
+    ports:
+      - "80:80"
+    volumes:
+      - frontend_dist:/usr/share/nginx/html:ro
+    depends_on:
+      frontend:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgadmin_data:
+  frontend_dist:
