@@ -2,7 +2,7 @@ name: Build and publish Docker images
 
 on:
   push:
-    branches: [main]
+    branches: [review]
 
 permissions:
   contents: read
