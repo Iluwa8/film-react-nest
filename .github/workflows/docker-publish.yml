@@ -2,7 +2,7 @@ name: Build and publish Docker images
 
 on:
   push:
-    branches: [review]
+    branches: [review] # Пока оставляем review, чтобы протестировать. Потом поменяем на main.
 
 permissions:
   contents: read
@@ -38,6 +38,7 @@ jobs:
         with:
           context: ${{ matrix.context }}
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:latest
+          # ВОТ ЗДЕСЬ ИСПРАВЛЕНИЕ: заменили переменную на iluwa8 (маленькими буквами)
+          tags: ghcr.io/iluwa8/${{ matrix.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
